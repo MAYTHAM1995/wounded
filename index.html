@@ -88,7 +88,7 @@
           <div class="actions">
             <button id="send-gsheets" class="primary">إرسال إلى Google Sheets</button>
           </div>
-          <p class="muted">ضع رابط Web App من Apps Script داخل المتغير GS_ENDPOINT.</p>
+          <p class="muted">الإرسال مباشر إلى Google Sheets.</p>
         </div>
         <div>
           <h3>استرجاع بيانات</h3>
@@ -111,187 +111,103 @@
   </div>
 
   <script>
-    const WOUNDED_FIELDS = [{"label": "ت", "id": "f__"}, {"label": "اسم الجريح", "id": "f__"}, {"label": "نسبة العجز", "id": "f__"}, {"label": "اسم الام", "id": "f__"}, {"label": "القضاء", "id": "f__"}, {"label": "الناحية / الحي", "id": "f__"}, {"label": "نقطة دالة", "id": "f__"}, {"label": "رقم الهاتف", "id": "f__"}, {"label": "الحالة الاجتماعية", "id": "f__"}, {"label": "اسم الزوجة", "id": "f__"}, {"label": "نوع السكن", "id": "f__"}, {"label": "معاملة الجريح التقاعدية منجزة؟", "id": "f__"}, {"label": "مستلم منحة وزارة النفط", "id": "f__"}, {"label": "تاريخ الاستلام", "id": "f__"}, {"label": "المبلغ", "id": "f__"}, {"label": "التحصيل الدراسي", "id": "f__"}, {"label": "عدد الاولاد", "id": "f__"}, {"label": "عدد البنات", "id": "f__"}, {"label": "الكلي", "id": "f__"}];
-    const FAMILY_FIELDS  = [{"label": "ت", "id": "f_family__"}, {"label": "اسم المستفيد", "id": "f_family__"}, {"label": "اسم الجريح", "id": "f_family__"}, {"label": "تاريخ الولادة", "id": "f_family__"}, {"label": "محل  الولادة", "id": "f_family__"}, {"label": "الصلة", "id": "f_family__"}, {"label": "رقم الهاتف", "id": "f_family__"}, {"label": "الحالة الاجتماعية", "id": "f_family__"}, {"label": "المحافظة", "id": "f_family__"}, {"label": "القضاء", "id": "f_family__"}, {"label": "المنطقة", "id": "f_family__"}, {"label": "نقطة دالة", "id": "f_family__"}, {"label": "الحالة الحياتية", "id": "f_family__"}, {"label": "مستمر في الدراسة", "id": "f_family__"}, {"label": "التحصيل الدراسي", "id": "f_family__"}, {"label": "اخر مرحلة دراسية", "id": "f_family__"}, {"label": "اسم المدرسة/الجامعة", "id": "f_family__"}, {"label": "الاختصاص الدقيق", "id": "f_family__"}, {"label": "سبب الانقطاع عن الدراسة", "id": "f_family__"}, {"label": "المهنة", "id": "f_family__"}, {"label": "الرغبة في الدراسة", "id": "f_family__"}, {"label": "الهواية", "id": "f_family__"}, {"label": "المستوى الدراسي", "id": "f_family__"}, {"label": "الاحتياج التعليمي", "id": "f_family__"}, {"label": "الخدمات التعليمية المقدمة", "id": "f_family__"}, {"label": "مستلم منح تعليمية", "id": "f_family__"}, {"label": "المبلغ", "id": "f_family__"}, {"label": "الحالة الصحية", "id": "f_family__"}, {"label": "الاحتياجات الصحية", "id": "f_family__"}, {"label": "ما تم توفيره صحيا", "id": "f_family__"}, {"label": "الحالة المادية", "id": "f_family__"}, {"label": "ما تم توفيره ماديا", "id": "f_family__"}, {"label": "بطاقة السكن", "id": "f_family__"}, {"label": "اسم الام", "id": "f_family__"}, {"label": "النسب", "id": "f_family__"}, {"label": "قاصرين", "id": "f_family__"}, {"label": "ملاحظات عامة", "id": "f_family__"}, {"label": "الراصد/ة", "id": "f_family__"}, {"label": "نسبة العجز", "id": "f_family__"}];
-
-    // ضع رابط Web App هنا (ينتهي بـ /exec)
-    const GS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz4_4iknBG9x0TWHMQYRwmlhnbpOclAZTs6ZJAcxEoZ6c4lGm74d9uJiED5_GDcw8Yu/exec';
+    // رابط Google Apps Script Web App
+    const GS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlq8sS3rQKiVwDJrl6AxTAgQmxiFX_ZvWSJGRdj49VedUn0c5EJMabpTSrDx7wFuBL/exec';
 
     const $ = (sel)=>document.querySelector(sel);
     const $$ = (sel)=>Array.from(document.querySelectorAll(sel));
 
-    // Tabs
-    $$('.tab').forEach(t=>t.onclick=()=>{ 
-      $$('.tab').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
-      const key = t.dataset.tab;
-      ['wounded','family','export'].forEach(k=>$('#tab-'+k).style.display = (k===key)?'block':'none');
-    });
+    const WOUNDED_FIELDS = [
+      {label:"اسم الجريح",id:"f_name"},
+      {label:"نسبة العجز",id:"f_disability"},
+      {label:"اسم الام",id:"f_mother"},
+      {label:"القضاء",id:"f_city"},
+      {label:"رقم الهاتف",id:"f_phone"},
+      {label:"الحالة الاجتماعية",id:"f_status"},
+      {label:"التحصيل الدراسي",id:"f_edu"},
+      {label:"عدد الاولاد",id:"f_sons"},
+      {label:"عدد البنات",id:"f_daughters"},
+      {label:"الكلي",id:"f_total"}
+    ];
 
-    // Build wounded grid inputs
+    const FAMILY_FIELDS = [
+      {label:"اسم المستفيد",id:"f_family_name"},
+      {label:"الصلة",id:"f_relation"},
+      {label:"تاريخ الولادة",id:"f_birth"},
+      {label:"الحالة الاجتماعية",id:"f_marital"},
+      {label:"التحصيل الدراسي",id:"f_family_edu"},
+      {label:"الحالة الصحية",id:"f_health"},
+      {label:"المهنة",id:"f_job"}
+    ];
+
     const woundedGrid = $('#wounded-grid');
-    function inputFor(f){
-      const wrap = document.createElement('div');
-      const isLong = /ملاحظات|وصف|احتياجات|عنوان|عنوان السكن|نقطة|تفاصيل/i.test(f.label);
-      wrap.innerHTML = `
-        <label for="${f.id}">${f.label}</label>
-        ${isLong ? `<textarea id="${f.id}"></textarea>` : `<input id="${f.id}" type="text">`}
-      `;
-      return wrap;
-    }
-    WOUNDED_FIELDS.forEach(f=>woundedGrid.appendChild(inputFor(f)));
+    WOUNDED_FIELDS.forEach(f=>{
+      const el=document.createElement('div');
+      el.innerHTML=`<label>${f.label}</label><input id="${f.id}">`;
+      woundedGrid.appendChild(el);
+    });
 
-    // Table builders
-    function buildHead(table, fields){
-      const thead = table.querySelector('thead');
-      thead.innerHTML = '<tr>'+fields.map(f=>`<th>${f.label}</th>`).join('')+'<th>إجراءات</th></tr>';
-    }
+    const woundedTable=$('#wounded-table');
+    const familyTable=$('#family-table');
+    woundedTable.innerHTML='<thead><tr>'+WOUNDED_FIELDS.map(f=>`<th>${f.label}</th>`).join('')+'<th>حذف</th></tr></thead><tbody></tbody>';
+    familyTable.innerHTML='<thead><tr>'+FAMILY_FIELDS.map(f=>`<th>${f.label}</th>`).join('')+'<th>حذف</th></tr></thead><tbody></tbody>';
 
-    function addRow(table, fields, values={}){
-      const tbody = table.querySelector('tbody');
-      const tr = document.createElement('tr');
-      tr.innerHTML = fields.map(f=>`<td contenteditable="true" data-id="${f.id}">${values[f.id] ?? ''}</td>`).join('')
-                  + `<td><button class="warn btn-del">حذف</button></td>`;
-      tbody.appendChild(tr);
-    }
-
-    // Initialize tables
-    const woundedTable = $('#wounded-table');
-    const familyTable = $('#family-table');
-    buildHead(woundedTable, WOUNDED_FIELDS);
-    buildHead(familyTable,   FAMILY_FIELDS);
-
-    // Save wounded form into table
-    $('#save-wounded').onclick = ()=>{
-      const values = {}
-      WOUNDED_FIELDS.forEach(f=> values[f.id] = document.getElementById(f.id).value.trim());
-      addRow(woundedTable, WOUNDED_FIELDS, values);
+    $('#save-wounded').onclick=()=>{
+      const data={};
+      WOUNDED_FIELDS.forEach(f=>data[f.id]=$('#'+f.id).value.trim());
+      const tr=document.createElement('tr');
+      tr.innerHTML=WOUNDED_FIELDS.map(f=>`<td contenteditable>${data[f.id]}</td>`).join('')+'<td><button class="warn del">حذف</button></td>';
+      woundedTable.querySelector('tbody').appendChild(tr);
       persist();
-      window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'});
     };
 
-    // Add family row
-    $('#add-family-row').onclick = ()=>{ addRow(familyTable, FAMILY_FIELDS, {}); persist(); };
+    $('#add-family-row').onclick=()=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=FAMILY_FIELDS.map(f=>`<td contenteditable data-id="${f.id}"></td>`).join('')+'<td><button class="warn del">حذف</button></td>';
+      familyTable.querySelector('tbody').appendChild(tr);
+      persist();
+    };
 
-    // Row deletion
-    document.addEventListener('click', (e)=>{ 
-      if(e.target.classList.contains('btn-del')){ 
-        e.target.closest('tr').remove(); 
-        persist(); 
+    document.addEventListener('click',e=>{
+      if(e.target.classList.contains('del')){
+        e.target.closest('tr').remove(); persist();
       }
     });
 
-    // CSV helpers
-    function tableToObjects(table, fields){
+    function tableToObjects(table,fields){
       return Array.from(table.querySelectorAll('tbody tr')).map(tr=>{
-        const obj = {}
-        fields.forEach((f,i)=>{
-          const cell = tr.children[i];
-          obj[f.label] = cell ? cell.textContent.trim() : '';
-        })
-        return obj;
-      })
-    }
-    function downloadCSV(filename, rows){
-      const headers = Object.keys(rows[0]||{});
-      const csv = [headers.join(',')].concat(rows.map(r=>headers.map(h=>`"${(r[h]||'').replaceAll('"','""')}"`).join(','))).join('\n');
-      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url);
-    }
-
-    // Export buttons
-    $('#download-wounded').onclick = ()=>{
-      const rows = tableToObjects(woundedTable, WOUNDED_FIELDS);
-      downloadCSV('الجرحى.csv', rows);
-    }
-    $('#download-family').onclick = ()=>{
-      const rows = tableToObjects(familyTable, FAMILY_FIELDS);
-      downloadCSV('العائلة.csv', rows);
-    }
-
-    // Import CSV
-    function parseCSV(text){
-      const [headerLine, ...lines] = text.split(/\r?\n/).filter(x=>x.trim().length>0);
-      const headers = headerLine.split(',');
-      const rows = lines.map(line=>{
-        const cells = [];
-        let cur=''; let inQ=false;
-        for(let i=0;i<line.length;i++){ const ch=line[i];
-          if(ch=='"'){ inQ=!inQ; continue; }
-          if(ch==',' && !inQ){ cells.push(cur); cur=''; continue; }
-          cur += ch;
-        }
-        cells.push(cur);
         const obj={};
-        headers.forEach((h,idx)=> obj[h.replace(/^"|"$|\uFEFF/g,'')] = (cells[idx]||'').replace(/^"|"$|\uFEFF/g,''));
+        fields.forEach((f,i)=>obj[f.label]=tr.children[i].innerText.trim());
         return obj;
       });
-      return rows;
     }
 
-    function fillTableFromCSV(table, fields, rows){
-      table.querySelector('tbody').innerHTML='';
-      rows.forEach(r=>{
-        const values={};
-        fields.forEach(f=> values[f.id] = r[f.label]||'');
-        addRow(table, fields, values);
-      });
-      persist();
-    }
-
-    $('#upload-wounded').addEventListener('change', e=>{
-      const file = e.target.files[0]; if(!file) return;
-      file.text().then(t=> fillTableFromCSV(woundedTable, WOUNDED_FIELDS, parseCSV(t)));
-    });
-    $('#upload-family').addEventListener('change', e=>{
-      const file = e.target.files[0]; if(!file) return;
-      file.text().then(t=> fillTableFromCSV(familyTable, FAMILY_FIELDS, parseCSV(t)));
-    });
-
-    // Local storage persistence
     function persist(){
-      const data = {
-        wounded: tableToObjects(woundedTable, WOUNDED_FIELDS),
-        family:  tableToObjects(familyTable,  FAMILY_FIELDS)
-      }
-      localStorage.setItem('wf_cache', JSON.stringify(data));
+      localStorage.setItem('wf_cache',JSON.stringify({
+        wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
+        family:tableToObjects(familyTable,FAMILY_FIELDS)
+      }));
     }
-    function restore(){
-      const raw = localStorage.getItem('wf_cache'); if(!raw) return;
-      try{
-        const data = JSON.parse(raw);
-        if(Array.isArray(data.wounded)) fillTableFromCSV(woundedTable, WOUNDED_FIELDS, data.wounded);
-        if(Array.isArray(data.family))  fillTableFromCSV(familyTable,  FAMILY_FIELDS,  data.family);
-      }catch(_e){}
-    }
-    $('#clear-cache').onclick = ()=>{ localStorage.removeItem('wf_cache'); alert('تم المسح'); };
 
-    // Send to Google Sheets
-    document.getElementById('send-gsheets').onclick = async () => {
-      if(!GS_ENDPOINT || GS_ENDPOINT.includes('https://script.google.com/macros/s/AKfycbz4_4iknBG9x0TWHMQYRwmlhnbpOclAZTs6ZJAcxEoZ6c4lGm74d9uJiED5_GDcw8Yu/exec')){
-        alert('رجاءً ضع رابط Web App الصحيح في المتغير GS_ENDPOINT');
-        return;
-      }
-      const payload = {
-        wounded: tableToObjects(woundedTable, WOUNDED_FIELDS),
-        family:  tableToObjects(familyTable,  FAMILY_FIELDS)
+    $('#clear-cache').onclick=()=>{localStorage.removeItem('wf_cache');alert('تم المسح');};
+
+    document.getElementById('send-gsheets').onclick=async()=>{
+      const payload={
+        wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
+        family:tableToObjects(familyTable,FAMILY_FIELDS)
       };
-      try {
-        const r = await fetch(GS_ENDPOINT, {
-          method: 'POST',
-          headers: {'Content-Type':'text/plain;charset=utf-8'},
-          body: JSON.stringify(payload)
+      try{
+        const res=await fetch(GS_ENDPOINT,{
+          method:'POST',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body:JSON.stringify(payload)
         });
-        const j = await r.json().catch(()=>({ok:false,error:'رد غير صالح'}));
-        alert(j.ok ? 'تم الإرسال إلى Google Sheets' : ('خطأ: ' + j.error));
-      } catch (e) {
-        alert('تعذر الإرسال: ' + e);
+        const j=await res.json();
+        alert(j.ok?'تم الإرسال بنجاح إلى Google Sheets':'خطأ أثناء الإرسال: '+j.error);
+      }catch(err){
+        alert('فشل الإرسال: '+err);
       }
     };
-
-    // Start
-    restore();
   </script>
 </body>
 </html>
