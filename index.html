@@ -6,208 +6,177 @@
   <title>نموذج إدخال بيانات الجريح والعائلة</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--brand:#0b5ed7;--ok:#198754;--warn:#ffc107;--danger:#dc3545;--bg:#f5f7fb;}
+    :root{--brand:#0b5ed7;--ok:#198754;--warn:#ffc107;--bg:#f5f7fb;}
     *{box-sizing:border-box}
     body{font-family:'Cairo',sans-serif;background:var(--bg);margin:0;color:#111}
-    header{background:var(--brand);color:#fff;padding:12px 16px;text-align:center;font-weight:700}
-    .wrap{max-width:1200px;margin:16px auto;padding:12px}
-    .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-    .tab{padding:8px 12px;border-radius:10px;background:#e7f0ff;color:#0b5ed7;border:1px solid #bcd3ff;cursor:pointer;user-select:none}
-    .tab.active{background:#0b5ed7;color:#fff;border-color:#0b5ed7}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+    header{background:var(--brand);color:#fff;padding:12px;text-align:center;font-weight:700}
+    .wrap{max-width:1100px;margin:16px auto;padding:12px}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{padding:8px 12px;border-radius:10px;background:#e7f0ff;color:#0b5ed7;border:1px solid #bcd3ff;cursor:pointer}
+    .tab.active{background:#0b5ed7;color:#fff}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;box-shadow:0 2px 5px rgba(0,0,0,.05)}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
     label{display:block;font-size:13px;color:#333;margin-bottom:4px}
-    input,select,textarea{width:100%;padding:8px 10px;border:1px solid #ccd3da;border-radius:10px;background:#fff}
-    textarea{min-height:70px;resize:vertical}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .pill{font-size:12px;background:#eef2ff;color:#333;border:1px solid #cdd7ff;padding:4px 8px;border-radius:999px}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;margin-top:12px}
+    input,textarea{width:100%;padding:8px;border:1px solid #ccd3da;border-radius:10px}
+    textarea{min-height:70px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
     button{padding:8px 12px;border-radius:10px;border:1px solid #cfd8e3;background:#fff;cursor:pointer}
-    button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-    button.success{background:var(--ok);border-color:var(--ok);color:#fff}
-    button.warn{background:var(--warn);border-color:var(--warn)}
-    table{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px}
-    th,td{border:1px solid #e5e7eb;padding:6px 8px}
+    button.primary{background:var(--brand);color:#fff}
+    button.success{background:var(--ok);color:#fff}
+    button.warn{background:var(--warn)}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:right}
     th{background:#f3f4f6}
-    .sticky-head{position:sticky;top:0;z-index:2}
-    .muted{color:#6b7280;font-size:13px}
-    .footer{text-align:center;color:#6b7280;font-size:12px;margin-top:18px}
   </style>
 </head>
 <body>
-  <header>نموذج إدخال بيانات الجريح والعائلة</header>
-  <div class="wrap">
-    <div class="tabs">
-      <div class="tab active" data-tab="wounded">بيانات الجريح</div>
-      <div class="tab" data-tab="family">بيانات العائلة</div>
-      <div class="tab" data-tab="export">حفظ/استرجاع</div>
-    </div>
-
-    <section class="card" id="tab-wounded">
-      <div class="row"><span class="pill">مصدر الحقول: جرحى2025.xlsx</span></div>
-      <div class="grid" id="wounded-grid"></div>
-      <div class="actions">
-        <button class="success" id="save-wounded">إضافة إلى قائمة الجرحى</button>
-        <span class="muted">تُحفظ البيانات مؤقتاً في المتصفح.</span>
-      </div>
-      <div class="card" style="margin-top:10px">
-        <table id="wounded-table">
-          <thead class="sticky-head"></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card" id="tab-family" style="display:none">
-      <div class="row"><span class="pill">مصدر الحقول: وليد خالد.xlsx</span>
-        <span class="muted">أضف صف لكل فرد من العائلة.</span>
-      </div>
-      <div class="actions">
-        <button class="primary" id="add-family-row">إضافة فرد</button>
-      </div>
-      <div class="card" style="margin-top:10px">
-        <table id="family-table">
-          <thead class="sticky-head"></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card" id="tab-export" style="display:none">
-      <div class="row" style="gap:16px">
-        <div>
-          <h3>ملفات CSV</h3>
-          <div class="actions">
-            <button id="download-wounded">تنزيل الجرحى.csv</button>
-            <button id="download-family">تنزيل العائلة.csv</button>
-          </div>
-          <p class="muted">الملفات تُفتح في Excel أو Google Sheets.</p>
-        </div>
-        <div>
-          <h3>Google Sheets</h3>
-          <div class="actions">
-            <button id="send-gsheets" class="primary">إرسال إلى Google Sheets</button>
-          </div>
-          <p class="muted">الإرسال مباشر إلى Google Sheets.</p>
-        </div>
-        <div>
-          <h3>استرجاع بيانات</h3>
-          <div class="actions">
-            <label>تحميل الجرحى CSV<input type="file" id="upload-wounded" accept=".csv"></label>
-            <label>تحميل العائلة CSV<input type="file" id="upload-family" accept=".csv"></label>
-          </div>
-        </div>
-        <div>
-          <h3>الحفظ التلقائي</h3>
-          <div class="row">
-            <button id="clear-cache" class="warn">مسح الحفظ المؤقت</button>
-          </div>
-          <p class="muted">توجد نسخة في التخزين المحلي للمتصفح.</p>
-        </div>
-      </div>
-    </section>
-
-    <div class="footer">الإصدار المتصل بـ Google Sheets.</div>
+<header>نموذج إدخال بيانات الجريح والعائلة</header>
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="wounded">بيانات الجريح</div>
+    <div class="tab" data-tab="family">بيانات العائلة</div>
+    <div class="tab" data-tab="export">حفظ / استرجاع</div>
   </div>
 
-  <script>
-    // رابط Google Apps Script Web App
-    const GS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlq8sS3rQKiVwDJrl6AxTAgQmxiFX_ZvWSJGRdj49VedUn0c5EJMabpTSrDx7wFuBL/exec';
+  <!-- الجريح -->
+  <section class="card" id="tab-wounded">
+    <div class="grid" id="wounded-grid"></div>
+    <div class="actions">
+      <button class="success" id="save-wounded">إضافة إلى قائمة الجرحى</button>
+    </div>
+    <table id="wounded-table"><thead></thead><tbody></tbody></table>
+  </section>
 
-    const $ = (sel)=>document.querySelector(sel);
-    const $$ = (sel)=>Array.from(document.querySelectorAll(sel));
+  <!-- العائلة -->
+  <section class="card" id="tab-family" style="display:none">
+    <div class="actions"><button class="primary" id="add-family-row">إضافة فرد</button></div>
+    <table id="family-table"><thead></thead><tbody></tbody></table>
+  </section>
 
-    const WOUNDED_FIELDS = [
-      {label:"اسم الجريح",id:"f_name"},
-      {label:"نسبة العجز",id:"f_disability"},
-      {label:"اسم الام",id:"f_mother"},
-      {label:"القضاء",id:"f_city"},
-      {label:"رقم الهاتف",id:"f_phone"},
-      {label:"الحالة الاجتماعية",id:"f_status"},
-      {label:"التحصيل الدراسي",id:"f_edu"},
-      {label:"عدد الاولاد",id:"f_sons"},
-      {label:"عدد البنات",id:"f_daughters"},
-      {label:"الكلي",id:"f_total"}
-    ];
+  <!-- الحفظ -->
+  <section class="card" id="tab-export" style="display:none">
+    <div class="actions">
+      <button id="send-gsheets" class="primary">إرسال إلى Google Sheets</button>
+      <button id="download-wounded">تنزيل الجرحى CSV</button>
+      <button id="download-family">تنزيل العائلة CSV</button>
+      <button id="clear-cache" class="warn">مسح الحفظ المؤقت</button>
+    </div>
+  </section>
+</div>
 
-    const FAMILY_FIELDS = [
-      {label:"اسم المستفيد",id:"f_family_name"},
-      {label:"الصلة",id:"f_relation"},
-      {label:"تاريخ الولادة",id:"f_birth"},
-      {label:"الحالة الاجتماعية",id:"f_marital"},
-      {label:"التحصيل الدراسي",id:"f_family_edu"},
-      {label:"الحالة الصحية",id:"f_health"},
-      {label:"المهنة",id:"f_job"}
-    ];
+<script>
+const GS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlq8sS3rQKiVwDJrl6AxTAgQmxiFX_ZvWSJGRdj49VedUn0c5EJMabpTSrDx7wFuBL/exec';
 
-    const woundedGrid = $('#wounded-grid');
-    WOUNDED_FIELDS.forEach(f=>{
-      const el=document.createElement('div');
-      el.innerHTML=`<label>${f.label}</label><input id="${f.id}">`;
-      woundedGrid.appendChild(el);
+// Tabs control
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const target=tab.dataset.tab;
+    ['wounded','family','export'].forEach(id=>{
+      document.getElementById('tab-'+id).style.display = (id===target)?'block':'none';
     });
+  });
+});
 
-    const woundedTable=$('#wounded-table');
-    const familyTable=$('#family-table');
-    woundedTable.innerHTML='<thead><tr>'+WOUNDED_FIELDS.map(f=>`<th>${f.label}</th>`).join('')+'<th>حذف</th></tr></thead><tbody></tbody>';
-    familyTable.innerHTML='<thead><tr>'+FAMILY_FIELDS.map(f=>`<th>${f.label}</th>`).join('')+'<th>حذف</th></tr></thead><tbody></tbody>';
+const WOUNDED_FIELDS=[
+  {label:'اسم الجريح',id:'name'},
+  {label:'نسبة العجز',id:'disability'},
+  {label:'رقم الهاتف',id:'phone'},
+  {label:'القضاء',id:'city'}
+];
+const FAMILY_FIELDS=[
+  {label:'اسم المستفيد',id:'fname'},
+  {label:'الصلة',id:'relation'},
+  {label:'تاريخ الولادة',id:'birth'},
+  {label:'الحالة الاجتماعية',id:'status'}
+];
 
-    $('#save-wounded').onclick=()=>{
-      const data={};
-      WOUNDED_FIELDS.forEach(f=>data[f.id]=$('#'+f.id).value.trim());
-      const tr=document.createElement('tr');
-      tr.innerHTML=WOUNDED_FIELDS.map(f=>`<td contenteditable>${data[f.id]}</td>`).join('')+'<td><button class="warn del">حذف</button></td>';
-      woundedTable.querySelector('tbody').appendChild(tr);
-      persist();
-    };
+// Build wounded inputs
+const woundedGrid=document.getElementById('wounded-grid');
+WOUNDED_FIELDS.forEach(f=>{
+  const d=document.createElement('div');
+  d.innerHTML=`<label>${f.label}</label><input id="${f.id}">`;
+  woundedGrid.appendChild(d);
+});
 
-    $('#add-family-row').onclick=()=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=FAMILY_FIELDS.map(f=>`<td contenteditable data-id="${f.id}"></td>`).join('')+'<td><button class="warn del">حذف</button></td>';
-      familyTable.querySelector('tbody').appendChild(tr);
-      persist();
-    };
+// Build tables
+function buildHead(tbl,fields){
+  tbl.querySelector('thead').innerHTML='<tr>'+fields.map(f=>`<th>${f.label}</th>`).join('')+'<th>حذف</th></tr>';
+}
+const woundedTable=document.getElementById('wounded-table');
+const familyTable=document.getElementById('family-table');
+buildHead(woundedTable,WOUNDED_FIELDS);
+buildHead(familyTable,FAMILY_FIELDS);
 
-    document.addEventListener('click',e=>{
-      if(e.target.classList.contains('del')){
-        e.target.closest('tr').remove(); persist();
-      }
-    });
+function addRow(tbl,fields,vals={}){
+  const tr=document.createElement('tr');
+  tr.innerHTML=fields.map(f=>`<td contenteditable>${vals[f.id]||''}</td>`).join('')+'<td><button class="warn del">حذف</button></td>';
+  tbl.querySelector('tbody').appendChild(tr);
+}
 
-    function tableToObjects(table,fields){
-      return Array.from(table.querySelectorAll('tbody tr')).map(tr=>{
-        const obj={};
-        fields.forEach((f,i)=>obj[f.label]=tr.children[i].innerText.trim());
-        return obj;
-      });
-    }
+// Add wounded
+document.getElementById('save-wounded').onclick=()=>{
+  const data={};
+  WOUNDED_FIELDS.forEach(f=>data[f.id]=document.getElementById(f.id).value.trim());
+  addRow(woundedTable,WOUNDED_FIELDS,data);
+  persist();
+};
 
-    function persist(){
-      localStorage.setItem('wf_cache',JSON.stringify({
-        wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
-        family:tableToObjects(familyTable,FAMILY_FIELDS)
-      }));
-    }
+// Add family row
+document.getElementById('add-family-row').onclick=()=>{addRow(familyTable,FAMILY_FIELDS);persist();};
 
-    $('#clear-cache').onclick=()=>{localStorage.removeItem('wf_cache');alert('تم المسح');};
+// Delete row
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('del')){e.target.closest('tr').remove();persist();}
+});
 
-    document.getElementById('send-gsheets').onclick=async()=>{
-      const payload={
-        wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
-        family:tableToObjects(familyTable,FAMILY_FIELDS)
-      };
-      try{
-        const res=await fetch(GS_ENDPOINT,{
-          method:'POST',
-          headers:{'Content-Type':'text/plain;charset=utf-8'},
-          body:JSON.stringify(payload)
-        });
-        const j=await res.json();
-        alert(j.ok?'تم الإرسال بنجاح إلى Google Sheets':'خطأ أثناء الإرسال: '+j.error);
-      }catch(err){
-        alert('فشل الإرسال: '+err);
-      }
-    };
-  </script>
+// Helpers
+function tableToObjects(tbl,fields){
+  return Array.from(tbl.querySelectorAll('tbody tr')).map(tr=>{
+    const obj={};
+    fields.forEach((f,i)=>obj[f.label]=tr.children[i].innerText.trim());
+    return obj;
+  });
+}
+function persist(){
+  localStorage.setItem('data',JSON.stringify({
+    wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
+    family:tableToObjects(familyTable,FAMILY_FIELDS)
+  }));
+}
+function restore(){
+  const raw=localStorage.getItem('data');if(!raw)return;
+  const d=JSON.parse(raw);
+  d.wounded.forEach(r=>addRow(woundedTable,WOUNDED_FIELDS,r));
+  d.family.forEach(r=>addRow(familyTable,FAMILY_FIELDS,r));
+}
+restore();
+
+document.getElementById('clear-cache').onclick=()=>{localStorage.removeItem('data');alert('تم المسح');};
+
+document.getElementById('download-wounded').onclick=()=>downloadCSV('wounded.csv',tableToObjects(woundedTable,WOUNDED_FIELDS));
+document.getElementById('download-family').onclick=()=>downloadCSV('family.csv',tableToObjects(familyTable,FAMILY_FIELDS));
+function downloadCSV(name,rows){
+  if(!rows.length)return;
+  const keys=Object.keys(rows[0]);
+  const csv=[keys.join(',')].concat(rows.map(r=>keys.map(k=>`"${(r[k]||'').replaceAll('"','""')}"`).join(','))).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;a.click();
+}
+
+// Google Sheets send
+document.getElementById('send-gsheets').onclick=async()=>{
+  const payload={
+    wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
+    family:tableToObjects(familyTable,FAMILY_FIELDS)
+  };
+  try{
+    const r=await fetch(GS_ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const j=await r.json();
+    alert(j.ok?'تم الإرسال إلى Google Sheets':'خطأ: '+j.error);
+  }catch(e){alert('فشل الإرسال: '+e);}
+};
+</script>
 </body>
 </html>
