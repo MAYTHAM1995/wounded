@@ -45,9 +45,7 @@
 
     <section class="card" id="tab-wounded">
       <div class="row"><span class="pill">مصدر الحقول: جرحى2025.xlsx</span></div>
-      <div class="grid" id="wounded-grid">
-        <!-- Wounded fields -->
-      </div>
+      <div class="grid" id="wounded-grid"></div>
       <div class="actions">
         <button class="success" id="save-wounded">إضافة إلى قائمة الجرحى</button>
         <span class="muted">تُحفظ البيانات مؤقتاً في المتصفح.</span>
@@ -86,6 +84,13 @@
           <p class="muted">الملفات تُفتح في Excel أو Google Sheets.</p>
         </div>
         <div>
+          <h3>Google Sheets</h3>
+          <div class="actions">
+            <button id="send-gsheets" class="primary">إرسال إلى Google Sheets</button>
+          </div>
+          <p class="muted">ضع رابط Web App من Apps Script داخل المتغير GS_ENDPOINT.</p>
+        </div>
+        <div>
           <h3>استرجاع بيانات</h3>
           <div class="actions">
             <label>تحميل الجرحى CSV<input type="file" id="upload-wounded" accept=".csv"></label>
@@ -102,12 +107,15 @@
       </div>
     </section>
 
-    <div class="footer">الإصدار المبدئي. يمكن تعديل الحقول لاحقاً حسب الحاجة.</div>
+    <div class="footer">الإصدار المتصل بـ Google Sheets.</div>
   </div>
 
   <script>
     const WOUNDED_FIELDS = [{"label": "ت", "id": "f__"}, {"label": "اسم الجريح", "id": "f__"}, {"label": "نسبة العجز", "id": "f__"}, {"label": "اسم الام", "id": "f__"}, {"label": "القضاء", "id": "f__"}, {"label": "الناحية / الحي", "id": "f__"}, {"label": "نقطة دالة", "id": "f__"}, {"label": "رقم الهاتف", "id": "f__"}, {"label": "الحالة الاجتماعية", "id": "f__"}, {"label": "اسم الزوجة", "id": "f__"}, {"label": "نوع السكن", "id": "f__"}, {"label": "معاملة الجريح التقاعدية منجزة؟", "id": "f__"}, {"label": "مستلم منحة وزارة النفط", "id": "f__"}, {"label": "تاريخ الاستلام", "id": "f__"}, {"label": "المبلغ", "id": "f__"}, {"label": "التحصيل الدراسي", "id": "f__"}, {"label": "عدد الاولاد", "id": "f__"}, {"label": "عدد البنات", "id": "f__"}, {"label": "الكلي", "id": "f__"}];
     const FAMILY_FIELDS  = [{"label": "ت", "id": "f_family__"}, {"label": "اسم المستفيد", "id": "f_family__"}, {"label": "اسم الجريح", "id": "f_family__"}, {"label": "تاريخ الولادة", "id": "f_family__"}, {"label": "محل  الولادة", "id": "f_family__"}, {"label": "الصلة", "id": "f_family__"}, {"label": "رقم الهاتف", "id": "f_family__"}, {"label": "الحالة الاجتماعية", "id": "f_family__"}, {"label": "المحافظة", "id": "f_family__"}, {"label": "القضاء", "id": "f_family__"}, {"label": "المنطقة", "id": "f_family__"}, {"label": "نقطة دالة", "id": "f_family__"}, {"label": "الحالة الحياتية", "id": "f_family__"}, {"label": "مستمر في الدراسة", "id": "f_family__"}, {"label": "التحصيل الدراسي", "id": "f_family__"}, {"label": "اخر مرحلة دراسية", "id": "f_family__"}, {"label": "اسم المدرسة/الجامعة", "id": "f_family__"}, {"label": "الاختصاص الدقيق", "id": "f_family__"}, {"label": "سبب الانقطاع عن الدراسة", "id": "f_family__"}, {"label": "المهنة", "id": "f_family__"}, {"label": "الرغبة في الدراسة", "id": "f_family__"}, {"label": "الهواية", "id": "f_family__"}, {"label": "المستوى الدراسي", "id": "f_family__"}, {"label": "الاحتياج التعليمي", "id": "f_family__"}, {"label": "الخدمات التعليمية المقدمة", "id": "f_family__"}, {"label": "مستلم منح تعليمية", "id": "f_family__"}, {"label": "المبلغ", "id": "f_family__"}, {"label": "الحالة الصحية", "id": "f_family__"}, {"label": "الاحتياجات الصحية", "id": "f_family__"}, {"label": "ما تم توفيره صحيا", "id": "f_family__"}, {"label": "الحالة المادية", "id": "f_family__"}, {"label": "ما تم توفيره ماديا", "id": "f_family__"}, {"label": "بطاقة السكن", "id": "f_family__"}, {"label": "اسم الام", "id": "f_family__"}, {"label": "النسب", "id": "f_family__"}, {"label": "قاصرين", "id": "f_family__"}, {"label": "ملاحظات عامة", "id": "f_family__"}, {"label": "الراصد/ة", "id": "f_family__"}, {"label": "نسبة العجز", "id": "f_family__"}];
+
+    // ضع رابط Web App هنا (ينتهي بـ /exec)
+    const GS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz4_4iknBG9x0TWHMQYRwmlhnbpOclAZTs6ZJAcxEoZ6c4lGm74d9uJiED5_GDcw8Yu/exec';
 
     const $ = (sel)=>document.querySelector(sel);
     const $$ = (sel)=>Array.from(document.querySelectorAll(sel));
@@ -186,7 +194,7 @@
     }
     function downloadCSV(filename, rows){
       const headers = Object.keys(rows[0]||{});
-      const csv = [headers.join(',')].concat(rows.map(r=>headers.map(h=>`"${(r[h]||'').replaceAll('"','""')}"`).join(','))).join('\\n');
+      const csv = [headers.join(',')].concat(rows.map(r=>headers.map(h=>`"${(r[h]||'').replaceAll('"','""')}"`).join(','))).join('\n');
       const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url);
@@ -204,7 +212,7 @@
 
     // Import CSV
     function parseCSV(text){
-      const [headerLine, ...lines] = text.split(/\\r?\\n/).filter(x=>x.trim().length>0);
+      const [headerLine, ...lines] = text.split(/\r?\n/).filter(x=>x.trim().length>0);
       const headers = headerLine.split(',');
       const rows = lines.map(line=>{
         const cells = [];
@@ -216,7 +224,7 @@
         }
         cells.push(cur);
         const obj={};
-        headers.forEach((h,idx)=> obj[h.replace(/^"|"$|\\uFEFF/g,'')] = (cells[idx]||'').replace(/^"|"$|\\uFEFF/g,''));
+        headers.forEach((h,idx)=> obj[h.replace(/^"|"$|\uFEFF/g,'')] = (cells[idx]||'').replace(/^"|"$|\uFEFF/g,''));
         return obj;
       });
       return rows;
@@ -258,6 +266,29 @@
       }catch(_e){}
     }
     $('#clear-cache').onclick = ()=>{ localStorage.removeItem('wf_cache'); alert('تم المسح'); };
+
+    // Send to Google Sheets
+    document.getElementById('send-gsheets').onclick = async () => {
+      if(!GS_ENDPOINT || GS_ENDPOINT.includes('https://script.google.com/macros/s/AKfycbz4_4iknBG9x0TWHMQYRwmlhnbpOclAZTs6ZJAcxEoZ6c4lGm74d9uJiED5_GDcw8Yu/exec')){
+        alert('رجاءً ضع رابط Web App الصحيح في المتغير GS_ENDPOINT');
+        return;
+      }
+      const payload = {
+        wounded: tableToObjects(woundedTable, WOUNDED_FIELDS),
+        family:  tableToObjects(familyTable,  FAMILY_FIELDS)
+      };
+      try {
+        const r = await fetch(GS_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type':'text/plain;charset=utf-8'},
+          body: JSON.stringify(payload)
+        });
+        const j = await r.json().catch(()=>({ok:false,error:'رد غير صالح'}));
+        alert(j.ok ? 'تم الإرسال إلى Google Sheets' : ('خطأ: ' + j.error));
+      } catch (e) {
+        alert('تعذر الإرسال: ' + e);
+      }
+    };
 
     // Start
     restore();
