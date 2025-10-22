@@ -38,7 +38,7 @@
     <div class="tab" data-tab="export">حفظ / استرجاع</div>
   </div>
 
-  <!-- الجريح -->
+  <!-- تبويب الجريح -->
   <section class="card" id="tab-wounded">
     <div class="grid" id="wounded-grid"></div>
     <div class="actions">
@@ -47,13 +47,13 @@
     <table id="wounded-table"><thead></thead><tbody></tbody></table>
   </section>
 
-  <!-- العائلة -->
+  <!-- تبويب العائلة -->
   <section class="card" id="tab-family" style="display:none">
     <div class="actions"><button class="primary" id="add-family-row">إضافة فرد</button></div>
     <table id="family-table"><thead></thead><tbody></tbody></table>
   </section>
 
-  <!-- الحفظ -->
+  <!-- تبويب الحفظ -->
   <section class="card" id="tab-export" style="display:none">
     <div class="actions">
       <button id="send-gsheets" class="primary">إرسال إلى Google Sheets</button>
@@ -65,6 +65,7 @@
 </div>
 
 <script>
+// رابط Google Apps Script Web App
 const GS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlq8sS3rQKiVwDJrl6AxTAgQmxiFX_ZvWSJGRdj49VedUn0c5EJMabpTSrDx7wFuBL/exec';
 
 // Tabs control
@@ -83,13 +84,19 @@ const WOUNDED_FIELDS=[
   {label:'اسم الجريح',id:'name'},
   {label:'نسبة العجز',id:'disability'},
   {label:'رقم الهاتف',id:'phone'},
-  {label:'القضاء',id:'city'}
+  {label:'القضاء',id:'city'},
+  {label:'التحصيل الدراسي',id:'edu'},
+  {label:'عدد الاولاد',id:'sons'},
+  {label:'عدد البنات',id:'daughters'}
 ];
 const FAMILY_FIELDS=[
   {label:'اسم المستفيد',id:'fname'},
   {label:'الصلة',id:'relation'},
   {label:'تاريخ الولادة',id:'birth'},
-  {label:'الحالة الاجتماعية',id:'status'}
+  {label:'الحالة الاجتماعية',id:'status'},
+  {label:'المهنة',id:'job'},
+  {label:'التحصيل الدراسي',id:'edu'},
+  {label:'الحالة الصحية',id:'health'}
 ];
 
 // Build wounded inputs
