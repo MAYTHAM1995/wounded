@@ -68,7 +68,7 @@
 // رابط Google Apps Script Web App
 const GS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlq8sS3rQKiVwDJrl6AxTAgQmxiFX_ZvWSJGRdj49VedUn0c5EJMabpTSrDx7wFuBL/exec';
 
-// Tabs control
+// Tabs
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -80,6 +80,7 @@ document.querySelectorAll('.tab').forEach(tab=>{
   });
 });
 
+// الحقول
 const WOUNDED_FIELDS=[
   {label:'اسم الجريح',id:'name'},
   {label:'نسبة العجز',id:'disability'},
@@ -99,7 +100,7 @@ const FAMILY_FIELDS=[
   {label:'الحالة الصحية',id:'health'}
 ];
 
-// Build wounded inputs
+// بناء مدخلات الجريح
 const woundedGrid=document.getElementById('wounded-grid');
 WOUNDED_FIELDS.forEach(f=>{
   const d=document.createElement('div');
@@ -107,7 +108,7 @@ WOUNDED_FIELDS.forEach(f=>{
   woundedGrid.appendChild(d);
 });
 
-// Build tables
+// الجداول
 function buildHead(tbl,fields){
   tbl.querySelector('thead').innerHTML='<tr>'+fields.map(f=>`<th>${f.label}</th>`).join('')+'<th>حذف</th></tr>';
 }
@@ -122,7 +123,7 @@ function addRow(tbl,fields,vals={}){
   tbl.querySelector('tbody').appendChild(tr);
 }
 
-// Add wounded
+// إضافة الجريح
 document.getElementById('save-wounded').onclick=()=>{
   const data={};
   WOUNDED_FIELDS.forEach(f=>data[f.id]=document.getElementById(f.id).value.trim());
@@ -130,22 +131,28 @@ document.getElementById('save-wounded').onclick=()=>{
   persist();
 };
 
-// Add family row
+// إضافة صف بالعائلة
 document.getElementById('add-family-row').onclick=()=>{addRow(familyTable,FAMILY_FIELDS);persist();};
 
-// Delete row
+// حذف صف
 document.addEventListener('click',e=>{
   if(e.target.classList.contains('del')){e.target.closest('tr').remove();persist();}
 });
 
-// Helpers
+// تحويل جدول → كائنات + تصفية الصفوف الفارغة
 function tableToObjects(tbl,fields){
-  return Array.from(tbl.querySelectorAll('tbody tr')).map(tr=>{
+  const rows = Array.from(tbl.querySelectorAll('tbody tr')).map(tr=>{
     const obj={};
-    fields.forEach((f,i)=>obj[f.label]=tr.children[i].innerText.trim());
+    fields.forEach((f,i)=>{
+      const v=(tr.children[i]?.innerText||'').trim();
+      obj[f.label]=v;
+    });
     return obj;
   });
+  return rows.filter(r => Object.values(r).some(v => v && v.length));
 }
+
+// حفظ محلي
 function persist(){
   localStorage.setItem('data',JSON.stringify({
     wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
@@ -155,31 +162,35 @@ function persist(){
 function restore(){
   const raw=localStorage.getItem('data');if(!raw)return;
   const d=JSON.parse(raw);
-  d.wounded.forEach(r=>addRow(woundedTable,WOUNDED_FIELDS,r));
-  d.family.forEach(r=>addRow(familyTable,FAMILY_FIELDS,r));
+  (d.wounded||[]).forEach(r=>addRow(woundedTable,WOUNDED_FIELDS, r));
+  (d.family ||[]).forEach(r=>addRow(familyTable ,FAMILY_FIELDS , r));
 }
 restore();
 
 document.getElementById('clear-cache').onclick=()=>{localStorage.removeItem('data');alert('تم المسح');};
 
+// تنزيل CSV
 document.getElementById('download-wounded').onclick=()=>downloadCSV('wounded.csv',tableToObjects(woundedTable,WOUNDED_FIELDS));
 document.getElementById('download-family').onclick=()=>downloadCSV('family.csv',tableToObjects(familyTable,FAMILY_FIELDS));
 function downloadCSV(name,rows){
-  if(!rows.length)return;
+  if(!rows.length){alert('لا توجد بيانات');return;}
   const keys=Object.keys(rows[0]);
   const csv=[keys.join(',')].concat(rows.map(r=>keys.map(k=>`"${(r[k]||'').replaceAll('"','""')}"`).join(','))).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download=name;a.click();
 }
 
-// Google Sheets send
+// إرسال إلى Google Sheets مع تصفية
 document.getElementById('send-gsheets').onclick=async()=>{
-  const payload={
-    wounded:tableToObjects(woundedTable,WOUNDED_FIELDS),
-    family:tableToObjects(familyTable,FAMILY_FIELDS)
-  };
+  const wounded=tableToObjects(woundedTable,WOUNDED_FIELDS);
+  const family =tableToObjects(familyTable ,FAMILY_FIELDS );
+  if(!wounded.length && !family.length){alert('لا توجد صفوف لإرسالها');return;}
   try{
-    const r=await fetch(GS_ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const r=await fetch(GS_ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({wounded, family})
+    });
     const j=await r.json();
     alert(j.ok?'تم الإرسال إلى Google Sheets':'خطأ: '+j.error);
   }catch(e){alert('فشل الإرسال: '+e);}
